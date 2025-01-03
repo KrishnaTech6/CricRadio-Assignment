@@ -1,5 +1,12 @@
 This is a Kotlin Multiplatform project targeting Android, iOS.
 
+Clean Architecture Followed 
+Used Ktor HTTP requests
+Jetpack Compose
+
+
+
+
 * `/composeApp` is for code that will be shared across your Compose Multiplatform applications.
   It contains several subfolders:
   - `commonMain` is for code that’s common for all targets.
