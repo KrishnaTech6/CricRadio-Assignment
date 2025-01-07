@@ -1,6 +1,7 @@
 package org.example.project
 
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +32,8 @@ import util.NetworkError
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.sp
 import org.example.project.domain.entities.TeamDetails
 import org.example.project.domain.usecases.GetMiniMatchCardUseCase
 import org.example.project.viewmodels.MatchCardViewModel
@@ -81,13 +84,16 @@ fun MatchCardContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Team(team = matchCard.teams!!.teamA)
+                val isBattingA = matchCard.settingObj?.currentTeam == "a"
+                val isBattingB = matchCard.settingObj?.currentTeam == "b"
+                Log.d("TAG", "MatchCardContent: $isBattingA, $isBattingB")
+                TeamA(team = matchCard.teams!!.teamA, isBatting = isBattingA)
                 Text(
                     matchCard.lastCommentary?.primaryText ?: "",
                     color = Color.White,
                     style = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.Bold)
                 )
-                Team(team = matchCard.teams.teamB)
+                TeamB(team = matchCard.teams.teamB, isBatting = isBattingB)
             }
             Spacer(
                 modifier = Modifier
@@ -103,12 +109,12 @@ fun MatchCardContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = matchCard.now?.runRate ?: "Run Rate: N/A",
+                    text = "CRR: ${matchCard.now?.runRate ?: "N/A"}",
                     color = Color.White,
                     style = MaterialTheme.typography.body2
                 )
                 Text(
-                    text = matchCard.now?.requiredRunRate ?: "Req. Rate: N/A",
+                    text = "RRR: ${matchCard.now?.requiredRunRate ?:"N/A"}",
                     color = Color.White,
                     style = MaterialTheme.typography.body2
                 )
@@ -123,11 +129,11 @@ fun MatchCardContent(
 }
 
 @Composable
-fun Team(team: TeamDetails) {
+fun TeamA(team: TeamDetails?, isBatting:Boolean) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             AsyncImage(
-                model = team.logo,
+                model = team?.logo,
                 modifier = Modifier
                     .size(30.dp)
                     .clip(CircleShape),
@@ -136,26 +142,67 @@ fun Team(team: TeamDetails) {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = team.shortName,
+                text = team?.shortName?:"",
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.body2
             )
+            Spacer(modifier = Modifier.width(8.dp))
+            if (isBatting)
+            Image(painter = painterResource(R.drawable.bat_icon), contentDescription = null)
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "${team.firstInningScore?.runs ?: 0} / ${team.firstInningScore?.wickets ?: 0}",
+            text = "${team?.firstInningScore?.runs ?: 0} / ${team?.firstInningScore?.wickets ?: 0}",
+            color = if (isBatting) textYellow else Color.White,
+            style = if (isBatting) MaterialTheme.typography.body2.copy(
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp
+            ) else MaterialTheme.typography.body2,
+        )
+        val overs = team?.firstInningScore?.overs ?: "0.0"
+        Text(
+            text = "$overs overs",
             color = Color.White,
             style = MaterialTheme.typography.body2
         )
+    }
+}
+
+@Composable
+fun TeamB(team: TeamDetails?, isBatting: Boolean) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            AsyncImage(
+                model = team?.logo,
+                modifier = Modifier
+                    .size(30.dp)
+                    .clip(CircleShape),
+                contentDescription = null,
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = team?.shortName?:"",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.body2
+            )
+            Spacer(Modifier.width(8.dp))
+            if (isBatting)
+                Image(painter = painterResource(R.drawable.bat_icon), contentDescription = null)
+        }
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "${team.secondInningScore?.runs ?: ""}/${team.secondInningScore?.wickets ?: ""}",
-            color = textYellow,
-            style = MaterialTheme.typography.body1,
-            fontWeight = FontWeight.Bold
+            text = "${team?.firstInningScoreB?.runs ?: 0} / ${team?.firstInningScoreB?.wickets ?: 0}",
+            color = if (isBatting) textYellow else Color.White,
+            style = if (isBatting) MaterialTheme.typography.body2.copy(
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp
+            ) else MaterialTheme.typography.body2,
         )
         Text(
-            text = "${team.firstInningScore?.overs?: "0.0"} overs",
+            text = "${team?.firstInningScoreB?.overs?: "0.0"} overs",
             color = Color.White,
             style = MaterialTheme.typography.body2
         )
